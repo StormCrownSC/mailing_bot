@@ -1,0 +1,10 @@
+postgres:
+  max_conns: 2
+  min_conns: 1
+
+zero_log:
+  level: "4"
+  skip_frame_count: 0
+  in_tg: false
+  chat_id: 2
+  alert_users: []

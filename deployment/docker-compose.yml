@@ -1,0 +1,54 @@
+version: '3.9'
+name: mailing_bot
+
+services:
+  app:
+    environment:
+      - TG_TOKEN=your_tg_token
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=mailing_bot_db
+      - POSTGRES_SSLMODE=disable
+    build:
+      context: ./..
+      dockerfile: deployment/app/Dockerfile
+    restart: always
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "2G"
+        max-file: "1"
+
+  postgres:
+    build:
+      context: ./
+      dockerfile: postgres/Dockerfile
+    restart: always
+    ports:
+      - "15432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=mailing_bot_db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+
+  migration:
+    build:
+      context: ./..
+      dockerfile: deployment/migrations/Dockerfile
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=mailing_bot_db
+      - POSTGRES_SSLMODE=disable
+    depends_on:
+      postgres:
+        condition: service_started
